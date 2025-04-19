@@ -1,0 +1,59 @@
+datasource db {
+    url      = env("DATABASE_URL")
+    provider = "postgresql"
+}
+
+enum Role {
+    basic
+    admin
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model User {
+    id         Int      @id @default(autoincrement())
+    firebaseId String   @map("firebase_id")
+    createdAt  DateTime @default(now())
+    email      String   @unique
+    name       String
+    role       Role
+    carts      Cart[]
+
+    @@map("user")
+}
+
+model Article {
+    id    Int    @id @default(autoincrement())
+    model String
+    image String
+    price Int
+    description String?
+
+    articleCarts ArticleCart[]
+
+    @@map("article")
+}
+
+model Cart {
+    id Int @id @default(autoincrement())
+
+    articleCarts ArticleCart[]
+    userId       Int           @map("user_id")
+    paid Boolean
+
+    user User @relation(fields: [userId], references: [id])
+    @@map("cart")
+}
+
+model ArticleCart {
+    id        Int @id @default(autoincrement())
+    articleId Int @map("article_id")
+    cartId    Int @map("cart_id")
+
+    article Article @relation(fields: [articleId], references: [id])
+    cart    Cart    @relation(fields: [cartId], references: [id])
+
+    @@map("article_cart")
+}
